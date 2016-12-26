@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>Bluebank</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+ <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
+  <body ng-app="BluebankApp">
+
+<div class="container" ng-controller="apiCtrl">
+  <h1>Contas</h1>
+
+  <table id="accounts" class="table table-striped table-bordered" cellspacing="0" width="100%" >
+          <thead>
+              <tr>
+                  <th>Agência</th>
+                  <th>Conta</th>
+                  <th>Saldo</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr ng-repeat="acc in accounts">
+                  <td>{{acc.agency}}</td>
+                  <td>{{acc.account}}</td>
+                  <td>{{acc.balance}}</td>
+              </tr>
+          </tbody>
+      </table>
+      <br>
+      <form  ng-submit="submitForm()" novalidate>
+        <h1>Transferência</h1>
+        <p><span>De:</span>
+          <input type="text" name="fromagency" value="" placeholder="Agência" ng-model="data.fromagency">
+          <input type="text" name="fromaccount" value="" placeholder="Conta" ng-model="data.fromaccount">
+        </p>
+        <p>
+          <span>Para:</span>
+          <input type="text" name="toagency" value="" placeholder="Agência" ng-model="data.toagency">
+          <input type="text" name="toaccount" value="" placeholder="Conta" ng-model="data.toaccount">
+        </p>
+        <p>
+          <span>Valor:</span>
+          <input type="text" name="value" value="" placeholder="Valor" ng-model="data.value">
+          <div ng-if="errorMessage" class="alert alert-danger alert-dismissable collapse" role="alert" id="alert">
+            {{ errorMessage }}
+          </div>
+        </p>
+
+        <p>
+           <input type="submit" ngClick="Submit" class="btn">
+        </p>
+    </form>
+</div>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+
+<script>
+var app = angular.module('BluebankApp', []);
+app.controller('apiCtrl', function($scope, $http, $timeout) {
+
+  $http.get('/accounts').success(function(data) {
+    $scope.accounts = data
+  });
+
+  $scope.submitForm = function() {
+    var form_data = $scope.data;
+
+    $http.post('/accounts', {data: form_data}).success(function(data) {
+      if (data == "ok") {
+        $scope.errorMessage = "";
+        $timeout(function() {
+          $http.get('/accounts').success(function(data) {
+            $scope.accounts = data
+          });
+        });
+      } else {
+        $("#alert").show();
+        $scope.errorMessage = data;
+        $scope.data = {};
+      }
+    });
+  }
+
+});
+
+</script>
+
+</body>
+</html>
